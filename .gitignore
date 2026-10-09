@@ -1,0 +1,15 @@
+RAG-Based_AI_Chatbot_for_PDF_Document_Querying_and_Management[1].pdf
+rag-vectordb
+data
+cache
+documents
+sage_env
+__pycache__/
+env311/
+env/
+*.pyc
+*.pyd
+*.dll
+.trunk/
+.venv/
+venv/

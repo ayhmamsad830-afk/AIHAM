@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sage X3 Expert System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://via.placeholder.com/50" alt="Logo" class="logo">
+                <h1>Sage X3 Expert</h1>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="section-title">
+                    <h2>Documents</h2>
+                    <button id="uploadBtn" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
+                </div>
+                
+                <div class="document-list" id="documentList">
+                    <!-- Documents will be loaded here -->
+                    <div class="loading-indicator" id="documentsLoadingIndicator">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading documents...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <p>Powered by RAG Technology</p>
+                <p class="version">v1.0.0</p>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Screen (shown only on first load) -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-content">
+                    <i class="bi bi-robot welcome-icon"></i>
+                    <h2>Welcome to Sage X3 Expert System</h2>
+                    <p>Upload documents to enhance my knowledge base. I'll use the information from these documents to provide better answers to your questions.</p>
+                    <div class="welcome-actions">
+                        <button id="welcomeStartBtn" class="btn btn-primary btn-lg">
+                            <i class="bi bi-play-fill"></i> Start Conversation
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Screen (shown after starting conversation) -->
+            <div class="chat-screen" id="chatScreen" style="display: none;">
+                <div class="chat-header">
+                    <div class="document-info">
+                        <h2>Conversation with Sage X3 Expert</h2>
+                        <span class="badge rounded-pill bg-primary" id="documentCount">0 documents</span>
+                    </div>
+                    <div class="chat-actions">
+                        <button id="uploadInChatBtn" class="btn btn-outline-primary">
+                            <i class="bi bi-upload"></i> Add Document
+                        </button>
+                        <button id="refreshChatBtn" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will appear here -->
+                    <div class="system-message">
+                        <div class="message-content">
+                            <p>I'm your Sage X3 Expert assistant. Upload documents to enhance my knowledge, then ask me questions about them.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <form id="messageForm">
+                        <div class="input-group">
+                            <textarea id="messageInput" class="form-control" placeholder="Ask a question..." rows="1" required></textarea>
+                            <button type="submit" class="btn btn-primary" id="sendMessageBtn">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">Upload Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm">
+                        <div class="mb-3">
+                            <label for="documentFile" class="form-label">Select PDF Document</label>
+                            <input type="file" class="form-control" id="documentFile" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp,.gif" required>
+                            <div class="form-text">Supported file types: PDF, Images (Max size: 50MB)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="documentName" class="form-label">Document Name (Optional)</label>
+                            <input type="text" class="form-control" id="documentName" placeholder="Enter a name for your document">
+                            <div class="form-text">If left blank, the original filename will be used.</div>
+                        </div>
+                    </form>
+                    <div class="upload-progress" style="display: none;">
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" id="uploadProgressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                        </div>
+                        <p id="uploadStatusText">Uploading document...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitUploadBtn">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Processing Modal -->
+    <div class="modal fade" id="processingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="processingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="processingModalLabel">Processing Document</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="processing-animation mb-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <h5 id="processingDocumentName">Your document is being processed</h5>
+                    <p class="text-muted">This may take a few minutes depending on the document size.</p>
+                    <div class="processing-status">
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" id="processingProgressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                        </div>
+                        <p id="processingStatusText">Extracting and analyzing document content...</p>
+                        <p id="processingPageCount">Page 0 of 0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill text-danger me-3" style="font-size: 2rem;"></i>
+                        <p id="errorModalText" class="mb-0">Something went wrong. Please try again.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Understood</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
